@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 中国大陆身份证号码验证
+ * 中国大陆身份证号码有效性验证
  * 1、号码的结构
  * 公民身份号码是特征组合码，由十七位数字本体码和一位校验码组成。排列顺序从左至右依次为：六位数字地址码，
  * 八位数字出生日期码，三位数字顺序码和一位数字校验码。
@@ -29,24 +29,27 @@ import java.util.regex.Pattern;
 public class IDCardUitls {
 
 	/**
-	* 功能：身份证的有效验证
-	* @param IDStr 身份证号
-	* @return 有效：返回"" 无效：返回String信息
-	* @throws ParseException
-	*/
+	 * 验证
+	 * 
+	 * @param IDStr 身份证号
+	 * @return 有效：返回"" 无效：返回String信息
+	 * @throws ParseException
+	 */
 	public static String IDCardValidate(String IDStr) {
 		String errorInfo = "";// 记录错误信息
 		String[] ValCodeArr = { "1", "0", "X", "9", "8", "7", "6", "5", "4", "3", "2" };
 		String[] Wi = { "7", "9", "10", "5", "8", "4", "2", "1", "6", "3", "7", "9", "10", "5", "8", "4", "2" };
 		String Ai = "";
 
-		// ================ 号码的长度 15位或18位 ================
-		if (IDStr.length() != 15 && IDStr.length() != 18) {
+		// 号码的长度 15位或18位
+		if (IDStr == null || (IDStr.length() != 15 && IDStr.length() != 18)) {
 			errorInfo = "身份证号码长度应该为15位或18位。";
-			return errorInfo;
 		}
 
-		// ================ 数字 除最后以为都为数字 ================
+		// 将号码转换为大写
+		IDStr = IDStr.toUpperCase();
+
+		// 数字 除最后以为都为数字
 		if (IDStr.length() == 18) {
 			Ai = IDStr.substring(0, 17);
 		} else if (IDStr.length() == 15) {
@@ -54,16 +57,14 @@ public class IDCardUitls {
 		}
 		if (isNumeric(Ai) == false) {
 			errorInfo = "身份证15位号码都应为数字 ; 18位号码除最后一位外，都应为数字。";
-			return errorInfo;
 		}
 
-		// ================ 出生年月是否有效 ================
+		// 出生年月是否有效
 		String strYear = Ai.substring(6, 10);// 年份
 		String strMonth = Ai.substring(10, 12);// 月份
 		String strDay = Ai.substring(12, 14);// 月份
 		if (isDate(strYear + "-" + strMonth + "-" + strDay) == false) {
 			errorInfo = "身份证生日无效。";
-			return errorInfo;
 		}
 		GregorianCalendar gc = new GregorianCalendar();
 		SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd");
@@ -71,7 +72,6 @@ public class IDCardUitls {
 			if ((gc.get(Calendar.YEAR) - Integer.parseInt(strYear)) > 150
 					|| (gc.getTime().getTime() - s.parse(strYear + "-" + strMonth + "-" + strDay).getTime()) < 0) {
 				errorInfo = "身份证生日不在有效范围。";
-				return errorInfo;
 			}
 		} catch (NumberFormatException e) {
 			// TODO
@@ -82,21 +82,18 @@ public class IDCardUitls {
 		}
 		if (Integer.parseInt(strMonth) > 12 || Integer.parseInt(strMonth) == 0) {
 			errorInfo = "身份证月份无效";
-			return errorInfo;
 		}
 		if (Integer.parseInt(strDay) > 31 || Integer.parseInt(strDay) == 0) {
 			errorInfo = "身份证日期无效";
-			return errorInfo;
 		}
 
-		// ================ 地区码时候有效 ================
+		// 地区码时候有效
 		Hashtable<String, String> h = GetAreaCode();
 		if (h.get(Ai.substring(0, 2)) == null) {
 			errorInfo = "身份证地区编码错误。";
-			return errorInfo;
 		}
 
-		// ================ 判断最后一位的值 ================
+		// 判断最后一位的值
 		int TotalmulAiWi = 0;
 		for (int i = 0; i < 17; i++) {
 			TotalmulAiWi = TotalmulAiWi + Integer.parseInt(String.valueOf(Ai.charAt(i))) * Integer.parseInt(Wi[i]);
@@ -108,11 +105,10 @@ public class IDCardUitls {
 		if (IDStr.length() == 18) {
 			if (Ai.equals(IDStr) == false) {
 				errorInfo = "身份证无效，不是合法的身份证号码";
-				return errorInfo;
 			}
 		}
 
-		return "";
+		return errorInfo;
 	}
 	
 	/**
@@ -162,7 +158,7 @@ public class IDCardUitls {
 	}
 
 	/**
-	 * 功能：判断字符串是否为数字
+	 * 判断字符串是否为数字
 	 *
 	 * @param str
 	 * @return
@@ -178,7 +174,7 @@ public class IDCardUitls {
 	}
 
 	/**
-	 * 功能：判断字符串是否为日期格式
+	 * 判断字符串是否为日期格式
 	 *
 	 * @param str
 	 * @return
